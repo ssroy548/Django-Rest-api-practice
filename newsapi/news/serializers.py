@@ -1,17 +1,20 @@
 from rest_framework import serializers
-from .models import Article
+from .models import Article, Journalist
 from datetime import datetime
 from django.utils.timesince import timesince
 
 
 class ArticleSerializer(serializers.ModelSerializer):
+
+    time_since_publication = serializers.SerializerMethodField()
+    # author = serializers.StringRelatedField()
+    # author = JournalistSerializer(read_only=True)
+
     class Meta:
         model = Article
         exclude = ('id',)
         # fields = "__all__"
         # fields = ("title","description","body")  #for selected fields
-
-    time_since_publication = serializers.SerializerMethodField()
 
     def get_time_since_publication(self, object):
         publication_date = object.publication_date
@@ -28,6 +31,14 @@ class ArticleSerializer(serializers.ModelSerializer):
         if len(title)< 10:
             raise serializers.ValidationError("Title should be at least 10 chars long")
         return title
+
+
+class JournalistSerializer(serializers.ModelSerializer):
+    articles = ArticleSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Journalist
+        fields = "__all__"
 
 
 # class ArticleSerializer(serializers.Serializer):
